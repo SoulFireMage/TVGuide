@@ -1,20 +1,40 @@
 # Channel Pre-Filter Configuration
-# List channel names (one per line) to show only these channels
-# Lines starting with # are comments and will be ignored
-# If this file is empty or doesn't exist, all channels will be shown
 #
-# Example format (remove the # to enable):
-# BBC One
-# BBC Two
-# ITV1
-# Channel 4
-# Channel 5
+# INCLUSION: Lines without prefix include channels matching the pattern
+# EXCLUSION: Lines starting with '-' exclude channels matching the pattern
 #
-# You can use partial names - they will match any channel containing that text
-# For example, "BBC" will match "BBC One HD", "BBC Two HD", etc.
+# Examples:
+#   BBC         - Include all channels with 'BBC' in the name
+#   -Wales      - Exclude all channels with 'Wales' in the name
+#   -Scotland   - Exclude all channels with 'Scotland' in the name
+#
+# Pattern matching is case-insensitive and matches partial names
+# Exclusions are applied AFTER inclusions
+#
+# Example 1: Include all BBC channels but exclude regional variants
+#   BBC
+#   -Wales
+#   -Scotland
+#   -Northern Ireland
+#   -Channel Islands
+#
+# Example 2: Include specific channels only
+#   BBC One London
+#   BBC Two
+#   ITV1
+#   Channel 4
+#   Channel 5
+#
+# Current filter (edit below):
 
-BBC One
-BBC Two
-ITV1
+BBC
+ITV
 Channel 4
 Channel 5
+-Wales
+-Scotland
+-Northern Ireland
+-Channel Islands
+-East Midlands
+-North East
+-North West

@@ -21,31 +21,52 @@ CHANNELS_FILTER_PATH = os.path.join(BASE_DIR, 'channels_filter.txt')
 def load_channel_filter():
     """
     Load channel filter from channels_filter.txt
-    Returns a list of channel name patterns to include, or None if no filter
+    Returns a tuple of (include_patterns, exclude_patterns), or (None, None) if no filter
+
+    Patterns starting with '-' are exclusions (e.g., '-Wales' excludes channels with 'Wales')
+    Patterns without '-' are inclusions (e.g., 'BBC' includes channels with 'BBC')
     """
     try:
         if not os.path.exists(CHANNELS_FILTER_PATH):
-            return None
+            return None, None
 
-        patterns = []
+        include_patterns = []
+        exclude_patterns = []
+
         with open(CHANNELS_FILTER_PATH, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 # Skip empty lines and comments
                 if line and not line.startswith('#'):
-                    patterns.append(line.lower())
+                    if line.startswith('-'):
+                        # Exclusion pattern: remove the '-' prefix
+                        exclude_patterns.append(line[1:].lower())
+                    else:
+                        # Inclusion pattern
+                        include_patterns.append(line.lower())
 
-        return patterns if patterns else None
+        # Return None for empty lists
+        include_patterns = include_patterns if include_patterns else None
+        exclude_patterns = exclude_patterns if exclude_patterns else None
+
+        return include_patterns, exclude_patterns
+
     except Exception as e:
         print(f"[WARNING] Could not load channel filter: {e}")
-        return None
+        return None, None
 
 
-def filter_channels(channels, programmes, filter_patterns):
+def filter_channels(channels, programmes, include_patterns, exclude_patterns):
     """
-    Filter channels based on patterns from channels_filter.txt
+    Filter channels based on inclusion and exclusion patterns from channels_filter.txt
+
+    Logic:
+    1. If include_patterns exist, start with only matching channels
+    2. If no include_patterns, start with all channels
+    3. Then remove any channels matching exclude_patterns
     """
-    if not filter_patterns:
+    # If no filters at all, return everything
+    if not include_patterns and not exclude_patterns:
         return channels, programmes
 
     filtered_channels = []
@@ -53,13 +74,30 @@ def filter_channels(channels, programmes, filter_patterns):
 
     for channel in channels:
         channel_name_lower = channel['name'].lower()
-        # Check if any pattern matches this channel name
-        if any(pattern in channel_name_lower for pattern in filter_patterns):
-            filtered_channels.append(channel)
-            if channel['id'] in programmes:
-                filtered_programmes[channel['id']] = programmes[channel['id']]
+
+        # Step 1: Check inclusion patterns (if any)
+        if include_patterns:
+            # Channel must match at least one inclusion pattern
+            if not any(pattern in channel_name_lower for pattern in include_patterns):
+                continue  # Skip this channel
+
+        # Step 2: Check exclusion patterns (if any)
+        if exclude_patterns:
+            # Channel must NOT match any exclusion pattern
+            if any(pattern in channel_name_lower for pattern in exclude_patterns):
+                continue  # Skip this channel
+
+        # Channel passed all filters - include it
+        filtered_channels.append(channel)
+        if channel['id'] in programmes:
+            filtered_programmes[channel['id']] = programmes[channel['id']]
 
     print(f"[INFO] Channel filter applied: {len(filtered_channels)} of {len(channels)} channels")
+    if include_patterns:
+        print(f"[INFO] - Inclusion patterns: {include_patterns}")
+    if exclude_patterns:
+        print(f"[INFO] - Exclusion patterns: {exclude_patterns}")
+
     return filtered_channels, filtered_programmes
 
 
@@ -113,13 +151,16 @@ def get_guide():
         print(f"[DEBUG] Successfully parsed {len(data.get('channels', []))} channels")
 
         # Apply channel filter if it exists
-        filter_patterns = load_channel_filter()
-        if filter_patterns:
-            print(f"[INFO] Applying channel filter with {len(filter_patterns)} patterns")
+        include_patterns, exclude_patterns = load_channel_filter()
+        if include_patterns or exclude_patterns:
+            total_patterns = (len(include_patterns) if include_patterns else 0) + \
+                           (len(exclude_patterns) if exclude_patterns else 0)
+            print(f"[INFO] Applying channel filter with {total_patterns} pattern(s)")
             data['channels'], data['programmes'] = filter_channels(
                 data['channels'],
                 data['programmes'],
-                filter_patterns
+                include_patterns,
+                exclude_patterns
             )
 
         return jsonify(data)
