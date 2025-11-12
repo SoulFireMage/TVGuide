@@ -1,10 +1,10 @@
 /**
  * TV Guide Application
  * Main JavaScript file for the Electronic Programme Guide
- * VERSION: 1.3.0 - Improved details popup and reduced logging
+ * VERSION: 1.4.0 - Added vertical scroll sync and row highlighting
  */
 
-console.log('TV Guide Script Version: 1.3.0');
+console.log('TV Guide Script Version: 1.4.0');
 
 // Application State
 const AppState = {
@@ -125,15 +125,27 @@ function attachEventListeners() {
     DOM.refreshBtn.addEventListener('click', () => loadGuideData());
     document.getElementById('retryBtn').addEventListener('click', () => loadGuideData());
 
-    // Sync timeline scroll with programme grid scroll
-    DOM.programmeWrapper.addEventListener('scroll', syncTimelineScroll);
+    // Sync vertical scroll between channel list and programme grid
+    DOM.programmeWrapper.addEventListener('scroll', syncScrolling);
+    DOM.channelList.addEventListener('scroll', syncScrolling);
 }
 
 /**
- * Sync timeline header scroll with programme grid scroll
+ * Sync scrolling between channel list and programme wrapper
  */
-function syncTimelineScroll() {
-    DOM.timelineHeader.scrollLeft = DOM.programmeWrapper.scrollLeft;
+function syncScrolling(e) {
+    const source = e.target;
+
+    if (source === DOM.programmeWrapper) {
+        // Sync timeline horizontal scroll
+        DOM.timelineHeader.scrollLeft = DOM.programmeWrapper.scrollLeft;
+        // Sync channel list vertical scroll
+        DOM.channelList.scrollTop = DOM.programmeWrapper.scrollTop;
+    } else if (source === DOM.channelList) {
+        // Sync programme grid vertical scroll
+        DOM.programmeWrapper.scrollTop = DOM.channelList.scrollTop;
+    }
+
     updateCurrentTimeIndicator();
 }
 
@@ -329,7 +341,10 @@ function createChannelItem(channel, index) {
     if (AppState.favourites.has(channel.id)) {
         star.classList.add('active');
     }
-    star.addEventListener('click', () => toggleFavourite(channel.id));
+    star.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavourite(channel.id);
+    });
 
     // Channel name
     const name = document.createElement('span');
@@ -338,6 +353,9 @@ function createChannelItem(channel, index) {
 
     div.appendChild(star);
     div.appendChild(name);
+
+    // Click to highlight corresponding programme row
+    div.addEventListener('click', () => highlightChannelRow(channel.id));
 
     // Drag and drop events
     div.addEventListener('dragstart', handleDragStart);
@@ -522,6 +540,27 @@ function closeDetailsRow() {
 
         // Remove active state from blocks
         document.querySelectorAll('.programme-block.active').forEach(el => el.classList.remove('active'));
+    }
+}
+
+/**
+ * Highlight a channel row when clicking the channel name
+ */
+function highlightChannelRow(channelId) {
+    // Remove highlight from all rows
+    document.querySelectorAll('.programme-row.highlighted').forEach(row => {
+        row.classList.remove('highlighted');
+    });
+
+    // Find and highlight the target row
+    const targetRow = document.querySelector(`.programme-row[data-channel-id="${channelId}"]`);
+    if (targetRow) {
+        targetRow.classList.add('highlighted');
+
+        // Remove highlight after 2 seconds
+        setTimeout(() => {
+            targetRow.classList.remove('highlighted');
+        }, 2000);
     }
 }
 

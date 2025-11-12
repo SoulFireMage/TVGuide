@@ -280,6 +280,12 @@ body {
     border-bottom: 1px solid #bdc3c7;
     position: relative; /* Container for absolute positioning */
     min-width: fit-content;
+    transition: background-color 0.3s ease;
+}
+
+.programme-row.highlighted {
+    background-color: rgba(52, 152, 219, 0.15);
+    box-shadow: inset 0 0 0 2px rgba(52, 152, 219, 0.4);
 }
 
 .programme-block {
