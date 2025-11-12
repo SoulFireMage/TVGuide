@@ -245,8 +245,17 @@ function renderGuide() {
 function renderTimeline() {
     DOM.timelineHeader.innerHTML = '';
 
+    console.log('=== TIMELINE RENDERING ===');
+    console.log('Timeline start:', AppState.timelineStart);
+    console.log('Timeline end:', AppState.timelineEnd);
+
     const totalMinutes = (AppState.timelineEnd - AppState.timelineStart) / (1000 * 60);
     const slots = Math.ceil(totalMinutes / CONFIG.TIMELINE_INTERVAL_MINUTES);
+
+    console.log('Total minutes:', totalMinutes);
+    console.log('Number of slots:', slots);
+    console.log('Pixels per minute:', AppState.pixelsPerMinute);
+    console.log('Slot width:', CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute, 'px');
 
     for (let i = 0; i < slots; i++) {
         const slotTime = new Date(AppState.timelineStart);
@@ -257,8 +266,14 @@ function renderTimeline() {
         slotDiv.style.minWidth = `${CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`;
         slotDiv.textContent = formatTime(slotTime);
 
+        // Log first few slots
+        if (i < 5) {
+            console.log(`Slot ${i}: ${formatTime(slotTime)} at offset ${i * CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`);
+        }
+
         DOM.timelineHeader.appendChild(slotDiv);
     }
+    console.log('=========================');
 }
 
 /**
@@ -526,24 +541,42 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
         }
     });
 
-    if (targetIndex >= 0 && targetIndex < channelRows.length - 1) {
+    console.log('Inserting details row after channel:', channel.name);
+    console.log('Target index:', targetIndex);
+    console.log('Total channel rows:', channelRows.length);
+
+    if (targetIndex >= 0) {
         // Insert after the channel row in the grid
-        channelRows[targetIndex].after(detailsRow);
+        channelRows[targetIndex].insertAdjacentElement('afterend', detailsRow);
+
+        // Verify insertion
+        setTimeout(() => {
+            console.log('After insertion - detailsRow in DOM:', document.contains(detailsRow));
+            console.log('After insertion - descDiv in DOM:', document.contains(descDiv));
+            console.log('After insertion - testSpan in DOM:', document.contains(testSpan));
+
+            if (!document.contains(detailsRow)) {
+                console.error('ERROR: detailsRow was not inserted into DOM!');
+                console.error('Trying alternative insertion method...');
+                DOM.programmeGrid.appendChild(detailsRow);
+            }
+        }, 100);
 
         // Also insert a spacer in the channel list to maintain alignment
         const spacer = document.createElement('div');
         spacer.className = 'details-row';
-        spacer.style.minHeight = detailsRow.offsetHeight + 'px';
-        channelListItems[targetIndex].after(spacer);
+        spacer.style.minHeight = '200px'; // Fixed height for now
+        channelListItems[targetIndex].insertAdjacentElement('afterend', spacer);
 
         AppState.activeDetailsRow = detailsRow;
     } else {
-        // If last row, append at the end
+        // If last row or not found, append at the end
+        console.log('Appending details row at end of grid');
         DOM.programmeGrid.appendChild(detailsRow);
 
         const spacer = document.createElement('div');
         spacer.className = 'details-row';
-        spacer.style.minHeight = detailsRow.offsetHeight + 'px';
+        spacer.style.minHeight = '200px';
         DOM.channelList.appendChild(spacer);
 
         AppState.activeDetailsRow = detailsRow;
