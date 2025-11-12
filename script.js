@@ -547,9 +547,12 @@ function closeDetailsRow() {
  * Highlight a channel row when clicking the channel name
  */
 function highlightChannelRow(channelId) {
-    // Remove highlight from all rows
+    // Remove highlight from all rows and blocks
     document.querySelectorAll('.programme-row.highlighted').forEach(row => {
         row.classList.remove('highlighted');
+    });
+    document.querySelectorAll('.programme-block.row-highlighted').forEach(block => {
+        block.classList.remove('row-highlighted');
     });
 
     // Find and highlight the target row
@@ -557,9 +560,18 @@ function highlightChannelRow(channelId) {
     if (targetRow) {
         targetRow.classList.add('highlighted');
 
+        // Also highlight all programme blocks in this row
+        const blocks = targetRow.querySelectorAll('.programme-block');
+        blocks.forEach(block => {
+            block.classList.add('row-highlighted');
+        });
+
         // Remove highlight after 2 seconds
         setTimeout(() => {
             targetRow.classList.remove('highlighted');
+            blocks.forEach(block => {
+                block.classList.remove('row-highlighted');
+            });
         }, 2000);
     }
 }
