@@ -51,23 +51,64 @@ A full-stack web application for displaying and managing TV programme schedules 
    cd TVGuide
    ```
 
-2. **Install Python dependencies**
+2. **Create a virtual environment** (Recommended, especially for Ubuntu/Debian)
+   ```bash
+   python3 -m venv venv
+   ```
+
+3. **Activate the virtual environment**
+
+   On Linux/Mac:
+   ```bash
+   source venv/bin/activate
+   ```
+
+   On Windows:
+   ```bash
+   venv\Scripts\activate
+   ```
+
+4. **Install Python dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Add your XMLTV guide file**
+5. **Add your XMLTV guide file**
    - Place your `guide.xml` file in the project root directory
    - The file should be in standard XMLTV format
+   - A sample `guide.xml` is included for testing
 
-4. **Run the application**
+6. **Run the application**
    ```bash
    python app.py
    ```
 
-5. **Open in browser**
+7. **Open in browser**
    - Navigate to: `http://localhost:5000`
    - The application will automatically load and display your TV guide
+
+8. **Deactivate virtual environment** (when finished)
+   ```bash
+   deactivate
+   ```
+
+### Quick Start (Ubuntu/Debian)
+
+If you get an "externally-managed-environment" error, use these commands:
+
+```bash
+cd TVGuide
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Next time you run the app, just activate the venv first:
+```bash
+source venv/bin/activate
+python app.py
+```
 
 ## Usage
 
