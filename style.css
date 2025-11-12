@@ -321,16 +321,26 @@ body {
     margin-top: 2px;
 }
 
-/* Programme Details Row (Accordion) */
-.details-row {
-    width: 100%; /* Force full width */
-    background-color: #ecf0f1;
+/* Programme Details Popup */
+.details-popup {
+    background-color: #ffffff;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     padding: 20px;
-    border-bottom: 2px solid #bdc3c7;
-    /* Remove animation temporarily to test */
-    display: block !important; /* Force block display */
-    min-height: 100px;
-    z-index: 100;
+    animation: fadeIn 0.2s ease-out;
+    pointer-events: auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideDown {

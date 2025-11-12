@@ -1,10 +1,10 @@
 /**
  * TV Guide Application
  * Main JavaScript file for the Electronic Programme Guide
- * VERSION: 1.2.0 - Fixed absolute positioning for programme blocks
+ * VERSION: 1.3.0 - Improved details popup and reduced logging
  */
 
-console.log('TV Guide Script Version: 1.2.0');
+console.log('TV Guide Script Version: 1.3.0');
 
 // Application State
 const AppState = {
@@ -248,17 +248,8 @@ function renderGuide() {
 function renderTimeline() {
     DOM.timelineHeader.innerHTML = '';
 
-    console.log('=== TIMELINE RENDERING ===');
-    console.log('Timeline start:', AppState.timelineStart);
-    console.log('Timeline end:', AppState.timelineEnd);
-
     const totalMinutes = (AppState.timelineEnd - AppState.timelineStart) / (1000 * 60);
     const slots = Math.ceil(totalMinutes / CONFIG.TIMELINE_INTERVAL_MINUTES);
-
-    console.log('Total minutes:', totalMinutes);
-    console.log('Number of slots:', slots);
-    console.log('Pixels per minute:', AppState.pixelsPerMinute);
-    console.log('Slot width:', CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute, 'px');
 
     for (let i = 0; i < slots; i++) {
         const slotTime = new Date(AppState.timelineStart);
@@ -267,17 +258,10 @@ function renderTimeline() {
         const slotDiv = document.createElement('div');
         slotDiv.className = 'timeline-slot';
         // DON'T set inline width - let CSS handle it with fixed 60px
-        // slotDiv.style.minWidth = `${CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`;
         slotDiv.textContent = formatTime(slotTime);
-
-        // Log first few slots
-        if (i < 5) {
-            console.log(`Slot ${i}: ${formatTime(slotTime)} at offset ${i * CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`);
-        }
 
         DOM.timelineHeader.appendChild(slotDiv);
     }
-    console.log('=========================');
 }
 
 /**
@@ -400,21 +384,6 @@ function createProgrammeBlock(programme, channel) {
     const duration = (end - start) / (1000 * 60); // Duration in minutes
     const offsetFromStart = (start - AppState.timelineStart) / (1000 * 60); // Offset in minutes
 
-    // DIAGNOSTIC LOGGING
-    if (channel.id === '4seven.uk' && programme.title.includes('24 Hours')) {
-        console.log('=== DIAGNOSTIC: Time Alignment ===');
-        console.log('Programme:', programme.title);
-        console.log('Raw start string:', programme.start);
-        console.log('Parsed start Date:', start);
-        console.log('Start ISO:', start.toISOString());
-        console.log('Start local time:', start.toLocaleTimeString());
-        console.log('Timeline start:', AppState.timelineStart);
-        console.log('Timeline start ISO:', AppState.timelineStart.toISOString());
-        console.log('Offset from timeline start (minutes):', offsetFromStart);
-        console.log('Duration (minutes):', duration);
-        console.log('===================================');
-    }
-
     // Calculate position and width using ABSOLUTE positioning
     const leftPosition = Math.max(0, offsetFromStart * AppState.pixelsPerMinute);
     const width = duration * AppState.pixelsPerMinute;
@@ -429,26 +398,28 @@ function createProgrammeBlock(programme, channel) {
         div.style.width = `${width}px`;
     }
 
-    console.log(`Programme ${programme.title}: left=${div.style.left}, width=${div.style.width}`);
+    // Store programme info for later use
+    div.dataset.programmeStart = programme.start;
+    div.dataset.leftPosition = leftPosition;
 
     // Title
     const title = document.createElement('div');
     title.className = 'programme-title';
     title.textContent = programme.title;
 
-    // Time
-    const time = document.createElement('div');
-    time.className = 'programme-time';
-    time.textContent = `${formatTime(start)} - ${formatTime(end)}`;
-
     div.appendChild(title);
-    div.appendChild(time);
+
+    // Only show time if duration is >= 120 minutes (2 hours)
+    if (duration >= 120) {
+        const time = document.createElement('div');
+        time.className = 'programme-time';
+        time.textContent = `${formatTime(start)} - ${formatTime(end)}`;
+        div.appendChild(time);
+    }
 
     // Click to expand details
     div.addEventListener('click', (e) => {
         e.stopPropagation();
-        console.log('Programme clicked:', programme.title);
-        console.log('Description:', programme.description);
         toggleProgrammeDetails(programme, channel, div);
     });
 
@@ -473,10 +444,25 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
     document.querySelectorAll('.programme-block.active').forEach(el => el.classList.remove('active'));
     blockElement.classList.add('active');
 
-    // Create details row
-    const detailsRow = document.createElement('div');
-    detailsRow.className = 'details-row';
-    detailsRow.dataset.programmeTitle = programme.title;
+    // Create details popup
+    const detailsPopup = document.createElement('div');
+    detailsPopup.className = 'details-popup';
+    detailsPopup.dataset.programmeTitle = programme.title;
+
+    // Position it below and aligned with the programme block
+    const blockRect = blockElement.getBoundingClientRect();
+    const wrapperRect = DOM.programmeWrapper.getBoundingClientRect();
+    const scrollLeft = DOM.programmeWrapper.scrollLeft;
+
+    // Calculate position relative to programme wrapper scroll
+    const leftPosition = blockRect.left - wrapperRect.left + scrollLeft;
+
+    detailsPopup.style.position = 'absolute';
+    detailsPopup.style.left = `${leftPosition}px`;
+    detailsPopup.style.top = `${blockElement.offsetTop + 60}px`; // 60px is row height
+    detailsPopup.style.width = '400px';
+    detailsPopup.style.maxWidth = '90vw';
+    detailsPopup.style.zIndex = '1000';
 
     const detailsContent = document.createElement('div');
     detailsContent.className = 'details-content';
@@ -511,112 +497,28 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
     const descDiv = document.createElement('div');
     descDiv.className = 'details-description';
     const description = programme.description || 'No description available.';
-
-    // Force inline styles to override any CSS caching issues
-    descDiv.style.fontSize = '14px';
-    descDiv.style.lineHeight = '1.6';
-    descDiv.style.color = '#2c3e50';
-    descDiv.style.backgroundColor = 'white';
-    descDiv.style.padding = '15px';
-    descDiv.style.borderRadius = '4px';
-    descDiv.style.minHeight = '50px';
-    descDiv.style.display = 'block';
-    descDiv.style.visibility = 'visible';
-
-    // Try setting text in multiple ways for debugging
     descDiv.textContent = description;
-    descDiv.setAttribute('data-desc-length', description.length);
-
-    // Add a test element to verify rendering
-    const testSpan = document.createElement('span');
-    testSpan.textContent = 'TEST TEXT - If you see this, rendering works!';
-    testSpan.style.color = 'red';
-    testSpan.style.fontWeight = 'bold';
-
-    console.log('=== DESCRIPTION DIAGNOSTIC ===');
-    console.log('Creating details row for:', programme.title);
-    console.log('Description:', description);
-    console.log('Description length:', description.length);
-    console.log('Description first 100 chars:', description.substring(0, 100));
-    console.log('descDiv element:', descDiv);
-    console.log('descDiv.textContent:', descDiv.textContent);
-    console.log('descDiv.innerHTML:', descDiv.innerHTML);
 
     detailsContent.appendChild(header);
     detailsContent.appendChild(timeDiv);
-    detailsContent.appendChild(testSpan); // Add test element
     detailsContent.appendChild(descDiv);
-    detailsRow.appendChild(detailsContent);
+    detailsPopup.appendChild(detailsContent);
 
-    // Log after appending
-    console.log('After append - descDiv in DOM:', document.contains(descDiv));
-    console.log('After append - descDiv.textContent:', descDiv.textContent);
-    console.log('============================');
-
-    // Find the corresponding channel row and insert after it
-    const channelRows = DOM.programmeGrid.querySelectorAll('.programme-row');
-    const channelListItems = DOM.channelList.querySelectorAll('.channel-item');
-
-    let targetIndex = -1;
-    channelRows.forEach((row, index) => {
-        if (row.dataset.channelId === channel.id) {
-            targetIndex = index;
-        }
-    });
-
-    console.log('Inserting details row after channel:', channel.name);
-    console.log('Target index:', targetIndex);
-    console.log('Total channel rows:', channelRows.length);
-
-    if (targetIndex >= 0) {
-        // Insert after the channel row in the grid
-        channelRows[targetIndex].insertAdjacentElement('afterend', detailsRow);
-
-        // Verify insertion
-        setTimeout(() => {
-            console.log('After insertion - detailsRow in DOM:', document.contains(detailsRow));
-            console.log('After insertion - descDiv in DOM:', document.contains(descDiv));
-            console.log('After insertion - testSpan in DOM:', document.contains(testSpan));
-
-            if (!document.contains(detailsRow)) {
-                console.error('ERROR: detailsRow was not inserted into DOM!');
-                console.error('Trying alternative insertion method...');
-                DOM.programmeGrid.appendChild(detailsRow);
-            }
-        }, 100);
-
-        // Also insert a spacer in the channel list to maintain alignment
-        const spacer = document.createElement('div');
-        spacer.className = 'details-row';
-        spacer.style.minHeight = '200px'; // Fixed height for now
-        channelListItems[targetIndex].insertAdjacentElement('afterend', spacer);
-
-        AppState.activeDetailsRow = detailsRow;
-    } else {
-        // If last row or not found, append at the end
-        console.log('Appending details row at end of grid');
-        DOM.programmeGrid.appendChild(detailsRow);
-
-        const spacer = document.createElement('div');
-        spacer.className = 'details-row';
-        spacer.style.minHeight = '200px';
-        DOM.channelList.appendChild(spacer);
-
-        AppState.activeDetailsRow = detailsRow;
+    // Find the programme's parent row and append to it
+    const programmeRow = blockElement.closest('.programme-row');
+    if (programmeRow) {
+        programmeRow.appendChild(detailsPopup);
+        AppState.activeDetailsRow = detailsPopup;
     }
 }
 
 /**
- * Close active details row
+ * Close active details popup
  */
 function closeDetailsRow() {
     if (AppState.activeDetailsRow) {
         AppState.activeDetailsRow.remove();
         AppState.activeDetailsRow = null;
-
-        // Remove spacer from channel list
-        const spacers = DOM.channelList.querySelectorAll('.details-row');
-        spacers.forEach(spacer => spacer.remove());
 
         // Remove active state from blocks
         document.querySelectorAll('.programme-block.active').forEach(el => el.classList.remove('active'));
