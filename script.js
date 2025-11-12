@@ -376,11 +376,18 @@ function createProgrammeBlock(programme, channel) {
     const offsetFromStart = (start - AppState.timelineStart) / (1000 * 60); // Offset in minutes
 
     // Calculate position and width
-    const left = offsetFromStart * AppState.pixelsPerMinute;
+    const left = Math.max(0, offsetFromStart * AppState.pixelsPerMinute); // Don't allow negative positions
     const width = duration * AppState.pixelsPerMinute;
 
-    div.style.marginLeft = `${left}px`;
-    div.style.width = `${width}px`;
+    // If programme starts before timeline, adjust width to show only visible portion
+    if (offsetFromStart < 0) {
+        const visibleDuration = duration + offsetFromStart; // offsetFromStart is negative
+        div.style.width = `${visibleDuration * AppState.pixelsPerMinute}px`;
+        div.style.marginLeft = '0px';
+    } else {
+        div.style.marginLeft = `${left}px`;
+        div.style.width = `${width}px`;
+    }
 
     // Title
     const title = document.createElement('div');
@@ -398,6 +405,8 @@ function createProgrammeBlock(programme, channel) {
     // Click to expand details
     div.addEventListener('click', (e) => {
         e.stopPropagation();
+        console.log('Programme clicked:', programme.title);
+        console.log('Description:', programme.description);
         toggleProgrammeDetails(programme, channel, div);
     });
 
@@ -459,7 +468,12 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
     // Description
     const descDiv = document.createElement('div');
     descDiv.className = 'details-description';
-    descDiv.textContent = programme.description || 'No description available.';
+    const description = programme.description || 'No description available.';
+    descDiv.textContent = description;
+
+    console.log('Creating details row for:', programme.title);
+    console.log('Description length:', description.length);
+    console.log('Description text:', description.substring(0, 100));
 
     detailsContent.appendChild(header);
     detailsContent.appendChild(timeDiv);
