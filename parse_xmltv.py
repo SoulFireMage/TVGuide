@@ -10,13 +10,13 @@ from typing import Dict, List, Any
 
 def parse_datetime(dt_str: str) -> str:
     """
-    Parse XMLTV datetime format (YYYYMMDDHHmmss +ZZZZ) to ISO format.
+    Parse XMLTV datetime format (YYYYMMDDHHmmss +ZZZZ) to ISO format with UTC timezone.
 
     Args:
         dt_str: DateTime string in XMLTV format (e.g., "20231201180000 +0000")
 
     Returns:
-        ISO formatted datetime string
+        ISO formatted datetime string with UTC indicator (Z suffix)
     """
     try:
         # XMLTV format: YYYYMMDDHHmmss +ZZZZ
@@ -26,8 +26,9 @@ def parse_datetime(dt_str: str) -> str:
         # Parse the datetime
         dt = datetime.strptime(dt_part, "%Y%m%d%H%M%S")
 
-        # Return ISO format
-        return dt.isoformat()
+        # Return ISO format with Z suffix to indicate UTC
+        # This ensures JavaScript interprets the time as UTC, not local time
+        return dt.isoformat() + 'Z'
     except (ValueError, IndexError) as e:
         # If parsing fails, return the original string
         return dt_str
