@@ -138,6 +138,31 @@ python app.py
 3. Release to drop in the new position
 4. The order is automatically saved
 
+### Pre-Filtering Channels
+You can create a permanent filter to show only specific channels by default:
+
+1. Edit the `channels_filter.txt` file in the project root
+2. Add channel names (one per line) that you want to see
+3. Lines starting with `#` are comments and will be ignored
+4. Channel names are matched using partial text (case-insensitive)
+5. Restart the Flask app to apply changes
+
+**Example `channels_filter.txt`:**
+```
+# My preferred channels
+BBC One
+BBC Two
+ITV1
+Channel 4
+Channel 5
+```
+
+**Features:**
+- If the file is empty or doesn't exist, all 266 channels are shown
+- Partial matching: "BBC" will match "BBC One HD", "BBC Two HD", etc.
+- This filter is applied server-side before favourites
+- Users can still use the favourites feature within the filtered set
+
 ### Finding Current Programmes
 1. Click the "Go to Now" button in the header
 2. The grid will scroll to show programmes currently airing
@@ -181,6 +206,7 @@ TVGuide/
 ├── update_guide.py        # Python script to update EPG data
 ├── update_guide.sh        # Bash script to update EPG data
 ├── guide.xml              # UK Freeview XMLTV data (266 channels)
+├── channels_filter.txt    # Optional: Pre-filter channels (edit to customize)
 ├── .gitignore             # Git ignore file
 └── README.md              # This file
 ```

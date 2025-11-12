@@ -15,6 +15,52 @@ CORS(app)  # Enable CORS for frontend requests
 # Get the directory where this script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 GUIDE_XML_PATH = os.path.join(BASE_DIR, 'guide.xml')
+CHANNELS_FILTER_PATH = os.path.join(BASE_DIR, 'channels_filter.txt')
+
+
+def load_channel_filter():
+    """
+    Load channel filter from channels_filter.txt
+    Returns a list of channel name patterns to include, or None if no filter
+    """
+    try:
+        if not os.path.exists(CHANNELS_FILTER_PATH):
+            return None
+
+        patterns = []
+        with open(CHANNELS_FILTER_PATH, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # Skip empty lines and comments
+                if line and not line.startswith('#'):
+                    patterns.append(line.lower())
+
+        return patterns if patterns else None
+    except Exception as e:
+        print(f"[WARNING] Could not load channel filter: {e}")
+        return None
+
+
+def filter_channels(channels, programmes, filter_patterns):
+    """
+    Filter channels based on patterns from channels_filter.txt
+    """
+    if not filter_patterns:
+        return channels, programmes
+
+    filtered_channels = []
+    filtered_programmes = {}
+
+    for channel in channels:
+        channel_name_lower = channel['name'].lower()
+        # Check if any pattern matches this channel name
+        if any(pattern in channel_name_lower for pattern in filter_patterns):
+            filtered_channels.append(channel)
+            if channel['id'] in programmes:
+                filtered_programmes[channel['id']] = programmes[channel['id']]
+
+    print(f"[INFO] Channel filter applied: {len(filtered_channels)} of {len(channels)} channels")
+    return filtered_channels, filtered_programmes
 
 
 @app.route('/')
@@ -65,6 +111,16 @@ def get_guide():
         print(f"[DEBUG] Attempting to parse: {GUIDE_XML_PATH}")
         data = parse_xmltv_file(GUIDE_XML_PATH)
         print(f"[DEBUG] Successfully parsed {len(data.get('channels', []))} channels")
+
+        # Apply channel filter if it exists
+        filter_patterns = load_channel_filter()
+        if filter_patterns:
+            print(f"[INFO] Applying channel filter with {len(filter_patterns)} patterns")
+            data['channels'], data['programmes'] = filter_channels(
+                data['channels'],
+                data['programmes'],
+                filter_patterns
+            )
 
         return jsonify(data)
 

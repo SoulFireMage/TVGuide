@@ -1,0 +1,20 @@
+# Channel Pre-Filter Configuration
+# List channel names (one per line) to show only these channels
+# Lines starting with # are comments and will be ignored
+# If this file is empty or doesn't exist, all channels will be shown
+#
+# Example format (remove the # to enable):
+# BBC One
+# BBC Two
+# ITV1
+# Channel 4
+# Channel 5
+#
+# You can use partial names - they will match any channel containing that text
+# For example, "BBC" will match "BBC One HD", "BBC Two HD", etc.
+
+BBC One
+BBC Two
+ITV1
+Channel 4
+Channel 5
