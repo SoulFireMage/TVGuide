@@ -44,28 +44,48 @@ def get_guide():
         JSON response containing channels and programmes data
     """
     try:
+        # Log the path being used
+        print(f"[DEBUG] Looking for guide.xml at: {GUIDE_XML_PATH}")
+        print(f"[DEBUG] File exists: {os.path.exists(GUIDE_XML_PATH)}")
+        print(f"[DEBUG] Current working directory: {os.getcwd()}")
+        print(f"[DEBUG] Script directory (BASE_DIR): {BASE_DIR}")
+
         # Check if guide.xml exists
         if not os.path.exists(GUIDE_XML_PATH):
+            error_msg = f"guide.xml file not found at path: {GUIDE_XML_PATH}"
+            print(f"[ERROR] {error_msg}")
             return jsonify({
                 'error': 'guide.xml file not found',
-                'message': 'Please ensure guide.xml is in the application directory'
+                'message': error_msg,
+                'searched_path': GUIDE_XML_PATH,
+                'working_directory': os.getcwd()
             }), 404
 
         # Parse the XMLTV file
+        print(f"[DEBUG] Attempting to parse: {GUIDE_XML_PATH}")
         data = parse_xmltv_file(GUIDE_XML_PATH)
+        print(f"[DEBUG] Successfully parsed {len(data.get('channels', []))} channels")
 
         return jsonify(data)
 
     except ValueError as e:
+        error_msg = f"Parse error: {str(e)}"
+        print(f"[ERROR] {error_msg}")
         return jsonify({
             'error': 'Parse error',
-            'message': str(e)
+            'message': str(e),
+            'file_path': GUIDE_XML_PATH
         }), 400
 
     except Exception as e:
+        error_msg = f"Server error: {str(e)}"
+        print(f"[ERROR] {error_msg}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'error': 'Server error',
-            'message': str(e)
+            'message': str(e),
+            'file_path': GUIDE_XML_PATH
         }), 500
 
 
@@ -79,14 +99,30 @@ def health():
 
 
 if __name__ == '__main__':
+    print("=" * 60)
+    print("TV Guide API Server - Startup Diagnostics")
+    print("=" * 60)
+    print(f"Script location (BASE_DIR): {BASE_DIR}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Looking for guide.xml at: {GUIDE_XML_PATH}")
+    print(f"File exists: {os.path.exists(GUIDE_XML_PATH)}")
+
+    if os.path.exists(GUIDE_XML_PATH):
+        file_size = os.path.getsize(GUIDE_XML_PATH)
+        print(f"File size: {file_size} bytes")
+
+    print("=" * 60)
+
     # Check if guide.xml exists at startup
     if not os.path.exists(GUIDE_XML_PATH):
-        print(f"WARNING: {GUIDE_XML_PATH} not found!")
-        print("The application will start, but the API will return 404 until the file is provided.")
+        print(f"\n⚠️  WARNING: guide.xml not found at {GUIDE_XML_PATH}")
+        print("The application will start, but the API will return 404 until the file is provided.\n")
+    else:
+        print(f"✓ guide.xml found successfully!\n")
 
     print("Starting TV Guide API Server...")
-    print(f"Guide file: {GUIDE_XML_PATH}")
     print("API endpoint: http://localhost:7022/api/guide")
     print("Frontend: http://localhost:7022/")
+    print("=" * 60 + "\n")
 
     app.run(debug=True, host='0.0.0.0', port=7022)
