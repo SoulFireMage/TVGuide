@@ -61,9 +61,14 @@ def parse_xmltv_file(file_path: str) -> Dict[str, Any]:
         display_name_elem = channel_elem.find('display-name')
         display_name = display_name_elem.text if display_name_elem is not None else channel_id
 
+        # Get the icon/logo URL if available
+        icon_elem = channel_elem.find('icon')
+        icon_url = icon_elem.get('src') if icon_elem is not None else None
+
         channels.append({
             'id': channel_id,
-            'name': display_name
+            'name': display_name,
+            'logo': icon_url
         })
 
     # Extract programmes grouped by channel

@@ -1,10 +1,10 @@
 /**
  * TV Guide Application
  * Main JavaScript file for the Electronic Programme Guide
- * VERSION: 1.4.0 - Added vertical scroll sync and row highlighting
+ * VERSION: 1.5.0 - Added channel logos and increased channel list width
  */
 
-console.log('TV Guide Script Version: 1.4.0');
+console.log('TV Guide Script Version: 1.5.0');
 
 // Application State
 const AppState = {
@@ -334,10 +334,18 @@ function createChannelItem(channel, index) {
     div.dataset.index = index;
     div.draggable = true;
 
-    // Channel number
-    const number = document.createElement('span');
-    number.className = 'channel-number';
-    number.textContent = (index + 1).toString().padStart(3, ' ');
+    // Channel logo (if available)
+    if (channel.logo) {
+        const logo = document.createElement('img');
+        logo.className = 'channel-logo';
+        logo.src = channel.logo;
+        logo.alt = channel.name;
+        logo.onerror = function() {
+            // Hide logo if it fails to load
+            this.style.display = 'none';
+        };
+        div.appendChild(logo);
+    }
 
     // Favourite star
     const star = document.createElement('span');
@@ -356,7 +364,6 @@ function createChannelItem(channel, index) {
     name.className = 'channel-name';
     name.textContent = channel.name;
 
-    div.appendChild(number);
     div.appendChild(star);
     div.appendChild(name);
 

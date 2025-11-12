@@ -149,7 +149,7 @@ body {
 /* Guide Layout */
 .guide-layout {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 280px 1fr;
     border-bottom: 2px solid #bdc3c7;
     background-color: #ecf0f1;
 }
@@ -198,7 +198,7 @@ body {
 /* Guide Content */
 .guide-content {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 280px 1fr;
     flex: 1;
     overflow: hidden;
     position: relative;
@@ -235,13 +235,11 @@ body {
     border-top: 3px solid #3498db;
 }
 
-.channel-number {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: #7f8c8d;
-    font-weight: 600;
-    margin-right: 8px;
-    white-space: pre;
+.channel-logo {
+    height: 32px;
+    max-width: 50px;
+    object-fit: contain;
+    margin-right: 10px;
     flex-shrink: 0;
 }
 
@@ -475,7 +473,7 @@ body {
 @media (max-width: 768px) {
     .guide-layout,
     .guide-content {
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 200px 1fr;
     }
 
     .corner-cell {
