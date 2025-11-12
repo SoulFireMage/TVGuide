@@ -73,10 +73,19 @@ A full-stack web application for displaying and managing TV programme schedules 
    pip install -r requirements.txt
    ```
 
-5. **Add your XMLTV guide file**
-   - Place your `guide.xml` file in the project root directory
-   - The file should be in standard XMLTV format
-   - A sample `guide.xml` is included for testing
+5. **EPG Data (UK Freeview included!)**
+   - The repository includes real UK Freeview EPG data (266 channels)
+   - Data is sourced from: https://github.com/dp247/Freeview-EPG
+   - Updated every 8 hours by the source
+
+   **To update the EPG data:**
+   ```bash
+   # Using Python script
+   python update_guide.py
+
+   # Or using bash script
+   ./update_guide.sh
+   ```
 
 6. **Run the application**
    ```bash
@@ -84,7 +93,7 @@ A full-stack web application for displaying and managing TV programme schedules 
    ```
 
 7. **Open in browser**
-   - Navigate to: `http://localhost:5000`
+   - Navigate to: `http://localhost:7022` (or your configured port)
    - The application will automatically load and display your TV guide
 
 8. **Deactivate virtual environment** (when finished)
@@ -134,6 +143,31 @@ python app.py
 2. The grid will scroll to show programmes currently airing
 3. A red vertical line indicates the current time
 
+### Updating EPG Data
+The included UK Freeview EPG data is updated every 8 hours at the source. To get the latest data:
+
+**Using Python:**
+```bash
+python update_guide.py
+```
+
+**Using Bash:**
+```bash
+./update_guide.sh
+```
+
+After updating, restart the Flask application to load the new data.
+
+**Automatic Updates (Optional):**
+You can set up a cron job to automatically update the EPG:
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line to update every 8 hours at 2am, 10am, and 6pm
+0 2,10,18 * * * cd /path/to/TVGuide && python3 update_guide.py
+```
+
 ## File Structure
 
 ```
@@ -144,8 +178,11 @@ TVGuide/
 ├── style.css              # CSS styling
 ├── script.js              # JavaScript functionality
 ├── requirements.txt       # Python dependencies
-├── README.md              # This file
-└── guide.xml              # Your XMLTV data file (add this)
+├── update_guide.py        # Python script to update EPG data
+├── update_guide.sh        # Bash script to update EPG data
+├── guide.xml              # UK Freeview XMLTV data (266 channels)
+├── .gitignore             # Git ignore file
+└── README.md              # This file
 ```
 
 ## API Endpoints
