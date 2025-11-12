@@ -1,10 +1,10 @@
 /**
  * TV Guide Application
  * Main JavaScript file for the Electronic Programme Guide
- * VERSION: 1.1.0 - Fixed timeline alignment and description visibility
+ * VERSION: 1.2.0 - Fixed absolute positioning for programme blocks
  */
 
-console.log('TV Guide Script Version: 1.1.0');
+console.log('TV Guide Script Version: 1.2.0');
 
 // Application State
 const AppState = {
@@ -372,6 +372,12 @@ function createProgrammeRow(channel) {
     row.className = 'programme-row';
     row.dataset.channelId = channel.id;
 
+    // Calculate total timeline width
+    const totalMinutes = (AppState.timelineEnd - AppState.timelineStart) / (1000 * 60);
+    const totalWidth = totalMinutes * AppState.pixelsPerMinute;
+    row.style.width = `${totalWidth}px`;
+    row.style.minWidth = `${totalWidth}px`;
+
     const programmes = AppState.programmes[channel.id] || [];
 
     programmes.forEach(programme => {
@@ -409,19 +415,21 @@ function createProgrammeBlock(programme, channel) {
         console.log('===================================');
     }
 
-    // Calculate position and width
-    const left = Math.max(0, offsetFromStart * AppState.pixelsPerMinute); // Don't allow negative positions
+    // Calculate position and width using ABSOLUTE positioning
+    const leftPosition = Math.max(0, offsetFromStart * AppState.pixelsPerMinute);
     const width = duration * AppState.pixelsPerMinute;
 
     // If programme starts before timeline, adjust width to show only visible portion
     if (offsetFromStart < 0) {
         const visibleDuration = duration + offsetFromStart; // offsetFromStart is negative
+        div.style.left = '0px';
         div.style.width = `${visibleDuration * AppState.pixelsPerMinute}px`;
-        div.style.marginLeft = '0px';
     } else {
-        div.style.marginLeft = `${left}px`;
+        div.style.left = `${leftPosition}px`;
         div.style.width = `${width}px`;
     }
+
+    console.log(`Programme ${programme.title}: left=${div.style.left}, width=${div.style.width}`);
 
     // Title
     const title = document.createElement('div');
