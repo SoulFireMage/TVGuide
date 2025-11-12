@@ -334,6 +334,11 @@ function createChannelItem(channel, index) {
     div.dataset.index = index;
     div.draggable = true;
 
+    // Channel number
+    const number = document.createElement('span');
+    number.className = 'channel-number';
+    number.textContent = (index + 1).toString().padStart(3, ' ');
+
     // Favourite star
     const star = document.createElement('span');
     star.className = 'channel-favourite';
@@ -351,6 +356,7 @@ function createChannelItem(channel, index) {
     name.className = 'channel-name';
     name.textContent = channel.name;
 
+    div.appendChild(number);
     div.appendChild(star);
     div.appendChild(name);
 
