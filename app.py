@@ -12,7 +12,9 @@ app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable CORS for frontend requests
 
 # Configuration
-GUIDE_XML_PATH = 'guide.xml'
+# Get the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GUIDE_XML_PATH = os.path.join(BASE_DIR, 'guide.xml')
 
 
 @app.route('/')
