@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     print("Starting TV Guide API Server...")
     print(f"Guide file: {GUIDE_XML_PATH}")
-    print("API endpoint: http://localhost:5000/api/guide")
-    print("Frontend: http://localhost:5000/")
+    print("API endpoint: http://localhost:7022/api/guide")
+    print("Frontend: http://localhost:7022/")
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=7022)
