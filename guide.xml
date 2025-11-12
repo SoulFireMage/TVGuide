@@ -309,7 +309,7 @@
 
   <programme start="20231201150000 +0000" stop="20231201160000 +0000" channel="channel4.uk">
     <title>Four in a Bed</title>
-    <desc>B&B owners compete to be crowned best value.</desc>
+    <desc>B&amp;B owners compete to be crowned best value.</desc>
   </programme>
 
   <programme start="20231201160000 +0000" stop="20231201170000 +0000" channel="channel4.uk">
