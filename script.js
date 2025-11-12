@@ -375,6 +375,21 @@ function createProgrammeBlock(programme, channel) {
     const duration = (end - start) / (1000 * 60); // Duration in minutes
     const offsetFromStart = (start - AppState.timelineStart) / (1000 * 60); // Offset in minutes
 
+    // DIAGNOSTIC LOGGING
+    if (channel.id === '4seven.uk' && programme.title.includes('24 Hours')) {
+        console.log('=== DIAGNOSTIC: Time Alignment ===');
+        console.log('Programme:', programme.title);
+        console.log('Raw start string:', programme.start);
+        console.log('Parsed start Date:', start);
+        console.log('Start ISO:', start.toISOString());
+        console.log('Start local time:', start.toLocaleTimeString());
+        console.log('Timeline start:', AppState.timelineStart);
+        console.log('Timeline start ISO:', AppState.timelineStart.toISOString());
+        console.log('Offset from timeline start (minutes):', offsetFromStart);
+        console.log('Duration (minutes):', duration);
+        console.log('===================================');
+    }
+
     // Calculate position and width
     const left = Math.max(0, offsetFromStart * AppState.pixelsPerMinute); // Don't allow negative positions
     const width = duration * AppState.pixelsPerMinute;
@@ -469,16 +484,36 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
     const descDiv = document.createElement('div');
     descDiv.className = 'details-description';
     const description = programme.description || 'No description available.';
-    descDiv.textContent = description;
 
+    // Try setting text in multiple ways for debugging
+    descDiv.textContent = description;
+    descDiv.setAttribute('data-desc-length', description.length);
+
+    // Add a test element to verify rendering
+    const testSpan = document.createElement('span');
+    testSpan.textContent = 'TEST TEXT - If you see this, rendering works!';
+    testSpan.style.color = 'red';
+    testSpan.style.fontWeight = 'bold';
+
+    console.log('=== DESCRIPTION DIAGNOSTIC ===');
     console.log('Creating details row for:', programme.title);
+    console.log('Description:', description);
     console.log('Description length:', description.length);
-    console.log('Description text:', description.substring(0, 100));
+    console.log('Description first 100 chars:', description.substring(0, 100));
+    console.log('descDiv element:', descDiv);
+    console.log('descDiv.textContent:', descDiv.textContent);
+    console.log('descDiv.innerHTML:', descDiv.innerHTML);
 
     detailsContent.appendChild(header);
     detailsContent.appendChild(timeDiv);
+    detailsContent.appendChild(testSpan); // Add test element
     detailsContent.appendChild(descDiv);
     detailsRow.appendChild(detailsContent);
+
+    // Log after appending
+    console.log('After append - descDiv in DOM:', document.contains(descDiv));
+    console.log('After append - descDiv.textContent:', descDiv.textContent);
+    console.log('============================');
 
     // Find the corresponding channel row and insert after it
     const channelRows = DOM.programmeGrid.querySelectorAll('.programme-row');
