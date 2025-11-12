@@ -1,7 +1,10 @@
 /**
  * TV Guide Application
  * Main JavaScript file for the Electronic Programme Guide
+ * VERSION: 1.1.0 - Fixed timeline alignment and description visibility
  */
+
+console.log('TV Guide Script Version: 1.1.0');
 
 // Application State
 const AppState = {
@@ -263,7 +266,8 @@ function renderTimeline() {
 
         const slotDiv = document.createElement('div');
         slotDiv.className = 'timeline-slot';
-        slotDiv.style.minWidth = `${CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`;
+        // DON'T set inline width - let CSS handle it with fixed 60px
+        // slotDiv.style.minWidth = `${CONFIG.TIMELINE_INTERVAL_MINUTES * AppState.pixelsPerMinute}px`;
         slotDiv.textContent = formatTime(slotTime);
 
         // Log first few slots
@@ -499,6 +503,17 @@ function toggleProgrammeDetails(programme, channel, blockElement) {
     const descDiv = document.createElement('div');
     descDiv.className = 'details-description';
     const description = programme.description || 'No description available.';
+
+    // Force inline styles to override any CSS caching issues
+    descDiv.style.fontSize = '14px';
+    descDiv.style.lineHeight = '1.6';
+    descDiv.style.color = '#2c3e50';
+    descDiv.style.backgroundColor = 'white';
+    descDiv.style.padding = '15px';
+    descDiv.style.borderRadius = '4px';
+    descDiv.style.minHeight = '50px';
+    descDiv.style.display = 'block';
+    descDiv.style.visibility = 'visible';
 
     // Try setting text in multiple ways for debugging
     descDiv.textContent = description;
