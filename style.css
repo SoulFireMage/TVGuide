@@ -183,7 +183,9 @@ body {
 }
 
 .timeline-slot {
-    min-width: 120px;
+    width: 60px; /* Fixed width - DO NOT USE min-width or flex will stretch it */
+    flex-shrink: 0; /* Prevent shrinking */
+    flex-grow: 0; /* Prevent growing */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -273,8 +275,11 @@ body {
 .programme-row {
     height: 60px;
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     border-bottom: 1px solid #bdc3c7;
     position: relative;
+    min-width: fit-content;
 }
 
 .programme-block {
@@ -316,12 +321,13 @@ body {
 
 /* Programme Details Row (Accordion) */
 .details-row {
-    grid-column: 1 / -1; /* Span across all columns */
+    width: 100%; /* Force full width */
     background-color: #ecf0f1;
     padding: 20px;
     border-bottom: 2px solid #bdc3c7;
-    animation: slideDown 0.3s ease-out;
-    overflow: visible;
+    /* Remove animation temporarily to test */
+    display: block !important; /* Force block display */
+    min-height: 100px;
     z-index: 100;
 }
 
